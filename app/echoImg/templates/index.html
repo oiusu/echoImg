@@ -159,7 +159,13 @@ textarea { margin: 1em 0;}
 
                 </div>
             </td>
-           <td><img src="static/uploads/result/{{ img.resultName}}"  /></td>
+           <td>
+               {% if img.resultName %}
+                    <img src="static/uploads/result/{{ img.resultName}}"  />
+               {% else %}
+
+               {% endif %}
+           </td>
         </tr>
       {% endfor %}
 

@@ -59,9 +59,10 @@
 		<div id="list_shot">
 		<ul>
 			  {% for img in imgs %}
-				<p>{{ img.resultName}}</p>
+				 {% if img.resultName %}
 				<!--<li><img src="../static/photos_file/0.jpg"  width="115px" height="100px"></li>-->
-				<li><img src="static/uploads/result/{{ img.resultName}}"   width="115px" height="100px" /></li>
+					<li><img src="static/uploads/result/{{ img.resultName}}"   width="115px" height="100px" /></li>
+				{% endif %}
 			  {% endfor %}
 		</ul>
 		</div>

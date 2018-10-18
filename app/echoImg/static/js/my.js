@@ -62,7 +62,7 @@ $(function(){
 		url="url("+url+") no-repeat";
 		$(".content").css("background",url).css("background-position","50%").css("background-size","contain");
 		indexlog=$(this).index();
-		var size=$(".bottle ul li").size();
+		var size=$(".bottle ul li").length;
 		if(indexlog>=3){
 			var left=(indexlog-3)*(-127);
 			if((size-7)*(-127)<left){
@@ -77,7 +77,7 @@ $(function(){
 		suan();
 	});
 	$(".bottle .r").click(function(){
-		var size=$(".bottle ul li").size();
+		var size=$(".bottle ul li").length;
 		var left=$(".bottle ul li").css("left");
 		left=parseInt(left);
 		left=left-381;
@@ -111,7 +111,7 @@ $(function(){
 		var url=$(".bottle ul li").eq(indexlog-1).find("img").attr("src");
 		url="url("+url+") no-repeat";
 		$(".content").css("background",url).css("background-position","50%").css("background-size","contain");
-		var size=$(".bottle ul li").size();
+		var size=$(".bottle ul li").length;
 		if(indexlog>=4){
 			var left=(indexlog-4)*(-127);
 			if((size-7)*(-127)<left){
@@ -132,7 +132,7 @@ $(function(){
 		
 	});
 	$(".base_right").click(function(){
-		var size=$(".bottle ul li").size();
+		var size=$(".bottle ul li").length;
 		if(indexlog<size-1){
 		var url=$(".bottle ul li").eq(indexlog+1).find("img").attr("src");
 		url="url("+url+") no-repeat";
@@ -157,7 +157,7 @@ $(function(){
 		}
 	});
 	function suan(){
-		var size=$(".bottle ul li").size();
+		var size=$(".bottle ul li").length;
 		
 		for(var i=0;i<size;i++){
 			$(".bottle ul li").eq(i).css("border","1px solid #e6e6e6");
