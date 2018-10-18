@@ -16,7 +16,7 @@ from app.echoImg.boxDrawing import imgDrawBoxes
 
 
 print (os.getcwd())
-UPLOAD_FOLDER = os.getcwd()+'/static/uploads'
+UPLOAD_FOLDER = os.getcwd()+'/echoImg/static/uploads'
 # UPLOAD_FOLDER = 'app/static/uploads'
 # ALLOWED_EXTENSIONS = set(['xml', 'jpg', 'jpeg','zip'])
 

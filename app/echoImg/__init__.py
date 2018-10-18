@@ -7,6 +7,6 @@
 '''
 from flask import Blueprint
 
-echoImg = Blueprint('echoImg', __name__,template_folder='templates',static_folder='static',static_url_path='/echoImg')
+echoImg = Blueprint('echoImg', __name__,template_folder='templates',static_folder='static')
 
 from app.echoImg import views
