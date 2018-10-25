@@ -9,27 +9,6 @@ import os
 import shutil
 
 
-# def recursionDir(path):
-#     fs = os.listdir(path)
-#     for i in fs:
-#         tmp_path = os.path.join(path, i)
-#         if not os.path.isdir(tmp_path):
-#
-#             if os.path.splitext(i)[1] == '.jpg':
-#                 print("jpg : "+ i)
-#                 if not os.path.exists(os.path.join(JPG_PATH,i)):
-#                     shutil.move(tmp_path, JPG_PATH)  # 移动文件
-#             if os.path.splitext(i)[1] =='.xml':
-#                 print("xml : " + i)
-#                 if not os.path.exists(os.path.join(XML_PATH,i)):
-#                     shutil.move(tmp_path, XML_PATH)  # 移动文件
-#
-#
-#
-#         else:
-#             print('文件夹：%s' % tmp_path)
-#             recursionDir(tmp_path)
-
 def appendToExclude(i):
     # global f
     with open("exclude", 'a') as f:
