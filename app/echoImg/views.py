@@ -22,21 +22,36 @@ print ("os.getcwd=%s  " %os.getcwd())
 print ("UPLOAD_FOLDER=%s  " %UPLOAD_FOLDER)
 
 
+#
+# XML_PATH = os.path.join(UPLOAD_FOLDER, "xml")
+# JPG_PATH = os.path.join(UPLOAD_FOLDER, "jpg")
+# RESULT_PATH = os.path.join(UPLOAD_FOLDER, "result")
+# ZIP_PATH = os.path.join(UPLOAD_FOLDER, "zip")
 
-XML_PATH = os.path.join(UPLOAD_FOLDER, "xml")
-JPG_PATH = os.path.join(UPLOAD_FOLDER, "jpg")
-RESULT_PATH = os.path.join(UPLOAD_FOLDER, "result")
-ZIP_PATH = os.path.join(UPLOAD_FOLDER, "zip")
+def makeUserDir():
+    if not os.path.exists(getUsrRootDir()):
+        os.mkdir(getUsrRootDir())
+    if not os.path.exists(getUserXmlPath()):
+        os.mkdir(getUserXmlPath())
+    if not os.path.exists(getUserJpgPath()):
+        os.mkdir(getUserJpgPath())
+    if not os.path.exists(getUserResultPath()):
+        os.mkdir(getUserResultPath())
+    if not os.path.exists(getUserZipPath()):
+        os.mkdir(getUserZipPath())
+    print("make user %s dir" %(session.get("username")))
 
+def getUsrRootDir():
+    return os.path.join(UPLOAD_FOLDER, session.get("username"))
 
 def getUserXmlPath():
-    return os.path.join(UPLOAD_FOLDER,session.get("username"), "xml")
+    return os.path.join(getUsrRootDir(), "xml")
 def getUserJpgPath():
-    return os.path.join(UPLOAD_FOLDER,session.get("username"), "jpg")
+    return os.path.join(getUsrRootDir(), "jpg")
 def getUserResultPath():
-    return os.path.join(UPLOAD_FOLDER,session.get("username"), "result")
+    return os.path.join(getUsrRootDir(), "result")
 def getUserZipPath():
-    return os.path.join(UPLOAD_FOLDER,session.get("username"), "zip")
+    return os.path.join(getUsrRootDir(), "zip")
 
 def auth(func):
     def inner(*args,**kwargs):
@@ -65,7 +80,7 @@ def picList():
 def batchDrawBoxes():
 
     if request.method == 'POST':
-        imgs ,username  = getPageParams()
+        imgs ,username = getPageParams()
         for imgInfo in imgs:
 
             resultName = imgInfo['resultName']
@@ -75,7 +90,7 @@ def batchDrawBoxes():
                 # 当resultName为空且 imgName和xmlName 都存在的情况下，需要执行生成resultImg
                 img_name = imgName.split('.')[0]
                 print('drawBoxes：%s' % imgName)
-                imgDrawBoxes(UPLOAD_FOLDER, img_name)
+                imgDrawBoxes(getUsrRootDir(),img_name)
 
         return redirect("/echoImg")
 
@@ -92,21 +107,22 @@ def batchUploadAndUnzip():
 
         if file and allowed_file(file.filename,getAllowedExtensions(fileType)):
             # 清空zip目录
-            shutil.rmtree(ZIP_PATH)
-            os.mkdir(ZIP_PATH)
+            usrZipPath = getUserZipPath()
+            shutil.rmtree(usrZipPath)
+            os.mkdir(usrZipPath)
 
             filename = secure_filename(file.filename)
 
-            zipFilePath = os.path.join(ZIP_PATH, filename)
+            zipFilePath = os.path.join(usrZipPath, filename)
             file.save(zipFilePath)
             #解压zip 内文件到 jpg xml 里
-            shutil.unpack_archive(zipFilePath,ZIP_PATH)
+            shutil.unpack_archive(zipFilePath, usrZipPath)
             # 遍历所有文件 并移动
-            recursionDir(ZIP_PATH)
+            recursionDir(usrZipPath)
 
             # 清空zip目录
-            shutil.rmtree(ZIP_PATH)
-            os.mkdir(ZIP_PATH)
+            shutil.rmtree(usrZipPath)
+            os.mkdir(usrZipPath)
 
         return redirect("/echoImg")
 
@@ -120,12 +136,12 @@ def recursionDir(path):
 
             if os.path.splitext(i)[1] == '.jpg':
                 print("jpg : "+ i)
-                if not os.path.exists(os.path.join(JPG_PATH,i)):
-                    shutil.move(tmp_path, JPG_PATH)  # 移动文件
+                if not os.path.exists(os.path.join(getUserJpgPath(),i)):
+                    shutil.move(tmp_path, getUserJpgPath())  # 移动文件
             if os.path.splitext(i)[1] =='.xml':
                 print("xml : " + i)
-                if not os.path.exists(os.path.join(XML_PATH,i)):
-                    shutil.move(tmp_path, XML_PATH)  # 移动文件
+                if not os.path.exists(os.path.join(getUserXmlPath(),i)):
+                    shutil.move(tmp_path, getUserXmlPath())  # 移动文件
         else:
             print('文件夹：%s' % tmp_path)
             recursionDir(tmp_path)
@@ -137,14 +153,14 @@ def deleteAll():
         # 删除 jpg xml result
 
 
-        shutil.rmtree(XML_PATH)
-        os.mkdir(XML_PATH)
+        shutil.rmtree(getUserXmlPath())
+        os.mkdir(getUserXmlPath())
 
-        shutil.rmtree(JPG_PATH)
-        os.mkdir(JPG_PATH)
+        shutil.rmtree(getUserJpgPath())
+        os.mkdir(getUserJpgPath())
 
-        shutil.rmtree(RESULT_PATH)
-        os.mkdir(RESULT_PATH)
+        shutil.rmtree(getUserResultPath())
+        os.mkdir(getUserResultPath())
 
         return redirect("/echoImg")
 
@@ -156,9 +172,9 @@ def delete():
         imgNamePrefix = imgName.split('.')[0]
 
         # 删除 jpg xml result
-        xml_file_path = os.path.join(XML_PATH, imgNamePrefix + '.xml')
-        jpg_file_path = os.path.join(JPG_PATH, imgNamePrefix + '.jpg')
-        result_file_path = os.path.join(RESULT_PATH, imgNamePrefix + '.jpg')
+        xml_file_path = os.path.join(getUserXmlPath(), imgNamePrefix + '.xml')
+        jpg_file_path = os.path.join(getUserJpgPath(), imgNamePrefix + '.jpg')
+        result_file_path = os.path.join(getUserResultPath(), imgNamePrefix + '.jpg')
         if os.path.exists(xml_file_path):
             os.remove(xml_file_path)
         if os.path.exists(jpg_file_path):
@@ -174,7 +190,7 @@ def boxDrawing():
     if request.method == 'POST':
         imgName = request.form['imgName']
         img_name = imgName.split('.')[0]
-        imgDrawBoxes(UPLOAD_FOLDER,img_name)
+        imgDrawBoxes(getUsrRootDir(),img_name)
 
         return redirect("/echoImg")
 
@@ -187,7 +203,7 @@ def upload():
 
         if file and allowed_file(file.filename,getAllowedExtensions(fileType)):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER,fileType, filename))
+            file.save(os.path.join(getUsrRootDir(),fileType, filename))
 
         return redirect("/echoImg")
 
@@ -217,7 +233,7 @@ def get_file_list(file_path):
 
 def getPageParams():
     # 获得目录下的图片列表 按上传时间排序
-    list = get_file_list(JPG_PATH)
+    list = get_file_list(getUserJpgPath())
 
     imgs = []
 
@@ -233,10 +249,10 @@ def getPageParams():
 
             imgInfo['imgName'] = imgName + '.jpg'
             # 查看文件是否存在
-            xml_file_path = os.path.join(XML_PATH, imgName + '.xml')
+            xml_file_path = os.path.join(getUserXmlPath(), imgName + '.xml')
             if os.path.exists(xml_file_path):
                 imgInfo['xmlName'] = imgName + '.xml'
-            result_file_path = os.path.join(RESULT_PATH, imgName + '.jpg')
+            result_file_path = os.path.join(getUserResultPath(), imgName + '.jpg')
             if os.path.exists(result_file_path):
                 imgInfo['resultName'] = imgName + '.jpg'
 
@@ -258,12 +274,12 @@ def login():
     if request.method == "GET":
         return render_template('form.html')
     else:
-
         username = request.form['username']
         password = request.form['password']
         if (username == 'admin' and password == '123') or (username == 'chenc' and password == '456'):
             session['username'] = username
-
+            # 建立用户目录
+            makeUserDir()
             return redirect("/echoImg")
         return render_template('form.html', message='账号或密码错误', username=username)
 
@@ -286,6 +302,7 @@ def homePage():
 @echoImg.route('/', methods=['GET'])
 @auth
 def index():
+    makeUserDir()
     imgs ,username = getPageParams()
     return render_template('index.html',imgs=imgs , username=username)
     # return render_template('index.html')

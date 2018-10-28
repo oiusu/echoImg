@@ -133,41 +133,41 @@ def imgDrawBoxes(upload_dir,img_name):
         # continue
     img_bboxdraw(upload_dir,img_name, boxes, score, classes)
 
-def main(anno_dir,img_dir,img_names):
-    """
-    :param anno_dir: a folder contains bboxes, which are on txt files named by each picture name
-    :param img_dir: where the picture store
-    :param img_namefile: txt file, to get the picture name
-    """
+# def main(anno_dir,img_dir,img_names):
+#     """
+#     :param anno_dir: a folder contains bboxes, which are on txt files named by each picture name
+#     :param img_dir: where the picture store
+#     :param img_namefile: txt file, to get the picture name
+#     """
+#
+#     #with open(img_namefile,'r') as f:
+#     #    img_names = f.readlines()
+#
+#     # undetect = 0
+#     for img_name in img_names:
+#         if img_name == '.DS_store':
+#             continue
+#         if img_name.split('.')[-1] != 'jpg':
+#             continue
+#         img_name = img_name.split('.')[0]
+#
+#         imgDrawBoxes(anno_dir,img_dir,img_name)
 
-    #with open(img_namefile,'r') as f:
-    #    img_names = f.readlines()
-
-    # undetect = 0
-    for img_name in img_names:
-        if img_name == '.DS_store':
-            continue
-        if img_name.split('.')[-1] != 'jpg':
-            continue
-        img_name = img_name.split('.')[0]
-
-        imgDrawBoxes(anno_dir,img_dir,img_name)
 
 
-
-if __name__ == '__main__':
-
-    assert FLAGS.save_path, 'set save_path first'
-    assert FLAGS.anno_dir, 'anno_dir is not exits'
-
-    if not os.path.exists(FLAGS.save_path):
-        os.makedirs(FLAGS.save_path)
-    if os.path.isfile(FLAGS.save_path):
-        raise NameError
-
-    img_dir = FLAGS.image_path
-    img_names = os.listdir(img_dir)
-    main(FLAGS.anno_dir,img_dir,img_names)
+# if __name__ == '__main__':
+#
+#     assert FLAGS.save_path, 'set save_path first'
+#     assert FLAGS.anno_dir, 'anno_dir is not exits'
+#
+#     if not os.path.exists(FLAGS.save_path):
+#         os.makedirs(FLAGS.save_path)
+#     if os.path.isfile(FLAGS.save_path):
+#         raise NameError
+#
+#     img_dir = FLAGS.image_path
+#     img_names = os.listdir(img_dir)
+#     main(FLAGS.anno_dir,img_dir,img_names)
 
 
 
