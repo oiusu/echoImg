@@ -8,92 +8,81 @@
 import os
 import shutil
 
-from flask import Flask, request, redirect, url_for , Blueprint
-from flask import render_template
-from werkzeug.utils import secure_filename
+from flask import render_template, session
+from flask import request
+from werkzeug.utils import secure_filename, redirect
+
 from app.echoImg import echoImg
 from app.echoImg.boxDrawing import imgDrawBoxes
 
-
-
-# UPLOAD_FOLDER = os.getcwd()+'/echoImg/static/uploads'
-UPLOAD_FOLDER = os.getcwd()+'/app/echoImg/static/uploads'
+UPLOAD_FOLDER = os.getcwd()+'/echoImg/static/uploads'   # 本地
+# UPLOAD_FOLDER = os.getcwd()+'/app/echoImg/static/uploads'  # 服务器
 
 print ("os.getcwd=%s  " %os.getcwd())
 print ("UPLOAD_FOLDER=%s  " %UPLOAD_FOLDER)
 
-# UPLOAD_FOLDER = 'app/static/uploads'
-# ALLOWED_EXTENSIONS = set(['xml', 'jpg', 'jpeg','zip'])
-
-bp = Blueprint('main', __name__,template_folder='templates' , static_folder='static')
-
-app = Flask(__name__)
-app.register_blueprint(bp, url_prefix='/imgDrawBox')
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-XML_PATH = os.path.join(app.config['UPLOAD_FOLDER'], "xml")
-JPG_PATH = os.path.join(app.config['UPLOAD_FOLDER'], "jpg")
-RESULT_PATH = os.path.join(app.config['UPLOAD_FOLDER'], "result")
-ZIP_PATH = os.path.join(app.config['UPLOAD_FOLDER'], "zip")
 
 
+XML_PATH = os.path.join(UPLOAD_FOLDER, "xml")
+JPG_PATH = os.path.join(UPLOAD_FOLDER, "jpg")
+RESULT_PATH = os.path.join(UPLOAD_FOLDER, "result")
+ZIP_PATH = os.path.join(UPLOAD_FOLDER, "zip")
 
 
+def getUserXmlPath():
+    return os.path.join(UPLOAD_FOLDER,session.get("username"), "xml")
+def getUserJpgPath():
+    return os.path.join(UPLOAD_FOLDER,session.get("username"), "jpg")
+def getUserResultPath():
+    return os.path.join(UPLOAD_FOLDER,session.get("username"), "result")
+def getUserZipPath():
+    return os.path.join(UPLOAD_FOLDER,session.get("username"), "zip")
 
+def auth(func):
+    def inner(*args,**kwargs):
+        username = session.get("username")
+        if username:
+            print("[auth] username = %s" %username)
+            return func(*args,**kwargs)
+        else:
+            print("[auth] username = %s" % username)
+            return redirect("/echoImg/login")
+
+    return inner
+
+
+# 返回列表页面
 @echoImg.route('/picList', methods=['GET', 'POST'])
 def picList():
-    imgs = getPageImgList()
-    return render_template('picList.html',imgs=imgs)
+    imgs ,username = getPageParams()
+    return render_template('picList.html',imgs=imgs,username=username)
 
 
 
-def recursionDir(path):
-    fs = os.listdir(path)
-    for i in fs:
-        tmp_path = os.path.join(path, i)
-        if not os.path.isdir(tmp_path):
 
-            if os.path.splitext(i)[1] == '.jpg':
-                print("jpg : "+ i)
-                if not os.path.exists(os.path.join(JPG_PATH,i)):
-                    shutil.move(tmp_path, JPG_PATH)  # 移动文件
-            if os.path.splitext(i)[1] =='.xml':
-                print("xml : " + i)
-                if not os.path.exists(os.path.join(XML_PATH,i)):
-                    shutil.move(tmp_path, XML_PATH)  # 移动文件
-
-
-
-        else:
-            print('文件夹：%s' % tmp_path)
-            recursionDir(tmp_path)
-
-
+# 批量结果生成
 @echoImg.route('/batchDrawBoxes', methods=['POST'])
 def batchDrawBoxes():
 
     if request.method == 'POST':
-        imgs = getPageImgList()
+        imgs ,username  = getPageParams()
         for imgInfo in imgs:
 
             resultName = imgInfo['resultName']
             imgName = imgInfo['imgName']
             xmlName = imgInfo['xmlName']
             if  not resultName.strip()  and  imgName.strip() and  xmlName.strip() :
+                # 当resultName为空且 imgName和xmlName 都存在的情况下，需要执行生成resultImg
                 img_name = imgName.split('.')[0]
                 print('drawBoxes：%s' % imgName)
-                imgDrawBoxes(app.config['UPLOAD_FOLDER'], img_name)
+                imgDrawBoxes(UPLOAD_FOLDER, img_name)
 
-        imgs = getPageImgList()
-
-        # return redirect(url_for('index', imgs=imgs))
-        return render_template('index.html', imgs=imgs)
+        return redirect("/echoImg")
 
 
 
 
-
+# 批量上传压缩包 并且解压
 @echoImg.route('/batchUploadAndUnzip', methods=['POST'])
 def batchUploadAndUnzip():
 
@@ -119,10 +108,27 @@ def batchUploadAndUnzip():
             shutil.rmtree(ZIP_PATH)
             os.mkdir(ZIP_PATH)
 
-        imgs = getPageImgList()
-        # return redirect(url_for('index', imgs=imgs))
-        return render_template('index.html', imgs=imgs)
+        return redirect("/echoImg")
 
+
+# 遍历zip_path 下 所有文件 并移动
+def recursionDir(path):
+    fs = os.listdir(path)
+    for i in fs:
+        tmp_path = os.path.join(path, i)
+        if not os.path.isdir(tmp_path):
+
+            if os.path.splitext(i)[1] == '.jpg':
+                print("jpg : "+ i)
+                if not os.path.exists(os.path.join(JPG_PATH,i)):
+                    shutil.move(tmp_path, JPG_PATH)  # 移动文件
+            if os.path.splitext(i)[1] =='.xml':
+                print("xml : " + i)
+                if not os.path.exists(os.path.join(XML_PATH,i)):
+                    shutil.move(tmp_path, XML_PATH)  # 移动文件
+        else:
+            print('文件夹：%s' % tmp_path)
+            recursionDir(tmp_path)
 
 @echoImg.route('/deleteAll', methods=[ 'POST'])
 def deleteAll():
@@ -140,11 +146,7 @@ def deleteAll():
         shutil.rmtree(RESULT_PATH)
         os.mkdir(RESULT_PATH)
 
-        imgs = getPageImgList()
-
-
-        # return redirect(url_for('index', imgs=imgs))
-        return render_template('index.html',imgs=imgs)
+        return redirect("/echoImg")
 
 
 @echoImg.route('/delete', methods=[ 'POST'])
@@ -164,30 +166,17 @@ def delete():
         if os.path.exists(result_file_path):
             os.remove(result_file_path)
 
-        imgs = getPageImgList()
+        return redirect("/echoImg")
 
-        # return redirect(url_for('index', imgs=imgs))
-        return render_template('index.html', imgs=imgs)
-
+# 单个图片 结果生成
 @echoImg.route('/boxDrawing', methods=[ 'POST'])
 def boxDrawing():
     if request.method == 'POST':
         imgName = request.form['imgName']
         img_name = imgName.split('.')[0]
-        imgDrawBoxes(app.config['UPLOAD_FOLDER'],img_name)
+        imgDrawBoxes(UPLOAD_FOLDER,img_name)
 
-        imgs = getPageImgList()
-
-        # return redirect(url_for('index', imgs=imgs))
-        return render_template('index.html', imgs=imgs)
-
-def getAllowedExtensions(fileType):
-    switcher = {
-        "jpg": set(["jpg","jpeg"]),
-        "xml": set(["xml"]),
-        "zip": set(["zip"]),
-    }
-    return switcher.get(fileType, set([]))
+        return redirect("/echoImg")
 
 @echoImg.route('/upload', methods=['POST'])
 def upload():
@@ -198,14 +187,20 @@ def upload():
 
         if file and allowed_file(file.filename,getAllowedExtensions(fileType)):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'],fileType, filename))
+            file.save(os.path.join(UPLOAD_FOLDER,fileType, filename))
 
-        imgs = getPageImgList()
-        # return redirect(url_for('index', imgs=imgs))
-        return render_template('index.html', imgs=imgs)
+        return redirect("/echoImg")
 
+def allowed_file(filename,allowedExtensions):
+    return '.' in filename and filename.rsplit('.', 1)[1] in allowedExtensions
 
-
+def getAllowedExtensions(fileType):
+    switcher = {
+        "jpg": set(["jpg","jpeg"]),
+        "xml": set(["xml"]),
+        "zip": set(["zip"]),
+    }
+    return switcher.get(fileType, set([]))
 
 def get_file_list(file_path):
     dir_list = os.listdir(file_path)
@@ -220,7 +215,7 @@ def get_file_list(file_path):
         return dir_list
 
 
-def getPageImgList():
+def getPageParams():
     # 获得目录下的图片列表 按上传时间排序
     list = get_file_list(JPG_PATH)
 
@@ -246,15 +241,53 @@ def getPageImgList():
                 imgInfo['resultName'] = imgName + '.jpg'
 
             imgs.append(imgInfo)
-    return imgs
+    return imgs ,session.get("username")
 
 
-def allowed_file(filename,allowedExtensions):
-    return '.' in filename and filename.rsplit('.', 1)[1] in allowedExtensions
+@echoImg.route('/logout', methods=['GET'])
+def logout():
+    print("get logout")
+    session.pop('username', None)
+    # session 里删除
+    return render_template('form.html')
 
 
-@echoImg.route('/', methods=['GET', 'POST'])
+
+@echoImg.route('/login', methods=['POST','GET'])
+def login():
+    if request.method == "GET":
+        return render_template('form.html')
+    else:
+
+        username = request.form['username']
+        password = request.form['password']
+        if (username == 'admin' and password == '123') or (username == 'chenc' and password == '456'):
+            session['username'] = username
+
+            return redirect("/echoImg")
+        return render_template('form.html', message='账号或密码错误', username=username)
+
+#
+# @echoImg.before_request
+# def before_user():
+#     if 'username' in session:
+#         username = session.get("username")
+#         return render_template('signin-ok.html', username=username)
+#     else:
+#         return render_template('form.html', message='未登录')
+
+
+
+@echoImg.route('/homePage', methods=['GET'])
+def homePage():
+    return redirect("/echoImg")
+
+
+@echoImg.route('/', methods=['GET'])
+@auth
 def index():
-    imgs = getPageImgList()
-    return render_template('index.html',imgs=imgs)
+    imgs ,username = getPageParams()
+    return render_template('index.html',imgs=imgs , username=username)
     # return render_template('index.html')
+
+

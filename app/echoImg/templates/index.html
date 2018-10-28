@@ -35,7 +35,7 @@ textarea { margin: 1em 0;}
 </head>
 <body>
      <!--<h2 style="font-style:italic">This is Index page</h2>-->
-
+    <p>hello <font color="green">{{ username }} </font><a href="{{url_for('echoImg.logout')}}">退出登录</a> </p>
     <dl>
         <dt>单个上传</dt>
        <dd>
@@ -71,7 +71,7 @@ textarea { margin: 1em 0;}
            <form action="/echoImg/batchUploadAndUnzip" method=post enctype=multipart/form-data>
                  <input type=file name=file>
                <input type="hidden" name="type" value="zip">
-                 <input type=submit value="上传压缩包并且批量生成">
+                 <input type=submit value="上传批量压缩包">
            </form>
        </dd>
 

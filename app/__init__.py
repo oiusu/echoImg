@@ -13,3 +13,5 @@
 
 from flask import Flask
 app = Flask(__name__)
+app.secret_key = "123asdzxc"
+app.permanent_session_lifetime=60*60*2

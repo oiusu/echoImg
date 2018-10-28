@@ -8,7 +8,7 @@
   {% if message %}
   <p style="color:red">{{ message }}</p>
   {% endif %}
-  <form action="/signin" method="post">
+  <form action="/echoImg/login" method="post">
     <legend>Please sign in:</legend>
     <p><input name="username" placeholder="Username" value="{{ username }}"></p>
     <p><input name="password" placeholder="Password" type="password"></p>

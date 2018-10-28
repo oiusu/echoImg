@@ -74,7 +74,9 @@
 </div>
 <div style="text-align:center;">
 		<li>
-			<a href="{{url_for('echoImg.index')}}">返回</a>
+			<font style="color:green">{{ username }}</font>
+			<a href="{{url_for('echoImg.homePage')}}">返回</a>
+			<a href="{{url_for('echoImg.logout')}}">退出登录</a>
 		</li>
 </div>
 </body>
