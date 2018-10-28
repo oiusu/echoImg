@@ -265,14 +265,14 @@ def logout():
     print("get logout")
     session.pop('username', None)
     # session 里删除
-    return render_template('form.html')
+    return render_template('login.html')
 
 
 
 @echoImg.route('/login', methods=['POST','GET'])
 def login():
     if request.method == "GET":
-        return render_template('form.html')
+        return render_template('login.html')
     else:
         username = request.form['username']
         password = request.form['password']
@@ -281,7 +281,23 @@ def login():
             # 建立用户目录
             makeUserDir()
             return redirect("/echoImg")
-        return render_template('form.html', message='账号或密码错误', username=username)
+        return render_template('login.html', message='账号或密码错误', username=username)
+
+@echoImg.route('/register',methods=['POST','GET'])
+def register():
+    if request.method == "GET":
+        return render_template('register.html')
+    else:
+        username = request.form['username']
+        password = request.form['password']
+        if username or password:
+            return render_template('register.html')
+        print("注册账号 username=%s" %username)
+        # 保存账号密码 建立用户目录
+        session['username'] = username
+        makeUserDir()
+        return redirect("/echoImg")
+
 
 #
 # @echoImg.before_request
@@ -290,7 +306,7 @@ def login():
 #         username = session.get("username")
 #         return render_template('signin-ok.html', username=username)
 #     else:
-#         return render_template('form.html', message='未登录')
+#         return render_template('login.html', message='未登录')
 
 
 
