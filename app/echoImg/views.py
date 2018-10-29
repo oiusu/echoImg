@@ -9,7 +9,7 @@ import hashlib
 import os
 import shutil
 import re
-from flask import render_template, session
+from flask import render_template, session, url_for
 from flask import request
 from werkzeug.utils import secure_filename, redirect
 
@@ -80,7 +80,7 @@ def batchDrawBoxes():
                 print('drawBoxes：%s' % imgName)
                 imgDrawBoxes(getUsrRootDir(),img_name)
 
-        return redirect("/echoImg")
+        return redirect("/echoImg/imgOper")
 
 
 
@@ -112,7 +112,7 @@ def batchUploadAndUnzip():
             shutil.rmtree(usrZipPath)
             os.mkdir(usrZipPath)
 
-        return redirect("/echoImg")
+        return redirect("/echoImg/imgOper")
 
 
 # 遍历zip_path 下 所有文件 并移动
@@ -150,7 +150,7 @@ def deleteAll():
         shutil.rmtree(getUserResultPath())
         os.mkdir(getUserResultPath())
 
-        return redirect("/echoImg")
+        return redirect("/echoImg/imgOper")
 
 
 @echoImg.route('/delete', methods=[ 'POST'])
@@ -170,7 +170,7 @@ def delete():
         if os.path.exists(result_file_path):
             os.remove(result_file_path)
 
-        return redirect("/echoImg")
+        return redirect("/echoImg/imgOper")
 
 # 单个图片 结果生成
 @echoImg.route('/boxDrawing', methods=[ 'POST'])
@@ -180,7 +180,7 @@ def boxDrawing():
         img_name = imgName.split('.')[0]
         imgDrawBoxes(getUsrRootDir(),img_name)
 
-        return redirect("/echoImg")
+        return redirect("/echoImg/imgOper")
 
 @echoImg.route('/upload', methods=['POST'])
 def upload():
@@ -193,7 +193,7 @@ def upload():
             filename = secure_filename(file.filename)
             file.save(os.path.join(getUsrRootDir(),fileType, filename))
 
-        return redirect("/echoImg")
+        return redirect("/echoImg/imgOper")
 
 def allowed_file(filename,allowedExtensions):
     return '.' in filename and filename.rsplit('.', 1)[1] in allowedExtensions
@@ -250,11 +250,14 @@ def getPageParams():
 
 @echoImg.route('/logout', methods=['GET'])
 def logout():
-    print("get logout")
+    print("[logout] username = %s" % session.get("username"))
+
     # session.pop('username', None)
     session.clear()
     # session 里删除
-    return render_template('login.html')
+    # return render_template('login.html')
+    return redirect(url_for('echoImg.login'))
+    # return redirect("/echoImg/login")
 
 
 
@@ -281,7 +284,7 @@ def login():
             return redirect("/echoImg")
         else:
             # return u'手机号码或密码错误，请确认后再登录'
-            return render_template('login.html', message='手机号码或密码错误，请确认后再登录', username=user.username)
+            return render_template('login.html', message='手机号码或密码错误，请确认后再登录', telephone=telephone)
 
 
 
@@ -289,15 +292,17 @@ def login():
 
 
 
-@echoImg.route('/register',methods=['POST','GET'])
-def register():
+@echoImg.route('/regist',methods=['POST','GET'])
+def regist():
     if request.method == "GET":
-        return render_template('register.html')
+        return render_template('regist.html')
     else:
         telephone = request.form.get('telephone')
         username = request.form.get('username')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
+        true_name = request.form.get('true_name')
+        email = request.form.get('email')
 
         # 手机号正则验证
         phone_pat = re.compile('^(13\d|14[5|7]|15\d|166|17[3|6|7]|18\d)\d{8}$')
@@ -309,34 +314,35 @@ def register():
 
         if user:
             # return u'该手机号码已被注册'
-            return render_template('register.html', message='该手机号码已被注册', username=username)
+            return render_template('regist.html', message='该手机号码已被注册')
         else:
             # password1和password2是否相等
             if password2 != password1:
-                return render_template('register.html', message='两次密码不相同', username=username)
+                return render_template('regist.html', message='两次密码不相同')
             elif username == '':
-                return render_template('register.html', message='用户名不能为空', username=username)
+                return render_template('regist.html', message='用户名不能为空')
             else:
                 if not res:
-                    return render_template('register.html', message='手机号格式不对', username=username)
+                    return render_template('regist.html', message='手机号格式不对')
                 else:
                     # 用户名验证，如果被注册就不能再注册
                     user1 = User.query.filter(User.username == username).first()
                     if user1:
-                        return render_template('register.html', message='该用户名已被注册',telephone=telephone)
+                        return render_template('regist.html', message='该用户名已被注册',telephone=telephone)
 
                     # 密码加密存储
                     m1 = hashlib.md5()
                     m1.update(password1.encode("utf8"))
                     pwd_md5 = m1.hexdigest()
-                    user = User(telephone=telephone, username=username, password=pwd_md5)
+                    user = User(telephone=telephone, username=username, password=pwd_md5,true_name=true_name,email=email)
                     db.session.add(user)
                     db.session.commit()
                     # 如果注册成功，跳转到登录页面
                     # return redirect(url_for('login'))
                     print("注册账号 username=%s" % username)
                     # 保存账号密码 建立用户目录
-                    return render_template('login.html', message=None, telephone=telephone)
+                    # return render_template('login.html', message=None, telephone=telephone)
+                    return redirect("/echoImg/login")
 
 
 
@@ -350,11 +356,29 @@ def register():
 #     else:
 #         return render_template('login.html', message='未登录')
 
+# 上下文处理器 bilibili 09登录注销5min
+@echoImg.context_processor
+def my_context_processor():
+    user_telephone = session.get('telephone')
+    if user_telephone:
+        user = User.query.filter(User.telephone == user_telephone).first()
+        if user:
+            return {'user': user}
+    return {}
+
+
+@echoImg.route('/imgOper/', methods=['GET','POST'])
+@login_required
+def imgOper():
+    if request.method == 'GET':
+        imgs, username, telephone = getPageParams()
+        return render_template('imgOper.html', imgs=imgs, username=username, telephone=telephone)
+        # pass
 
 
 @echoImg.route('/homePage', methods=['GET'])
 def homePage():
-    return redirect("/echoImg")
+    return redirect("/echoImg/imgOper")
 
 
 @echoImg.route('/', methods=['GET'])

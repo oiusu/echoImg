@@ -1,0 +1,17 @@
+.logo {
+    width: 30%;
+    height: 30%;
+}
+
+body {
+    background: #f3f3f3;
+}
+
+.main{
+    background: #fff;
+    /*width: 730px;*/
+    width:90%;
+    margin: 0 auto;
+    overflow: hidden;
+    padding: 10px;
+}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    完善个人信息
+{% endblock %}
+{% block active %}
+    <li><a href="{{ url_for('echoImg.index') }}">首页 <span class="sr-only">(current)</span></a></li>
+    <li class="active"><a href="{{ url_for('echoImg.imgOper') }}">图片操作</a></li>
+{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('echoImg.static', filename='css/complete_infos.css') }}">
+{% endblock %}
+
+{% block main %}
+    <h3 class="page-title">请先完善个人健康信息</h3>
+    <form action="" method="POST">
+        <div class="form-container">
+{#            <div class="form-group">#}
+{#                <input type="text" class="form-control" placeholder="身份证号" name="id_card">#}
+{#            </div>#}
+            <div class="form-group">
+                <input type="text" class="form-control" placeholder="姓名" name="username">
+            </div>
+{#            <div class="form-group">#}
+{#                <input type="text" class="form-control" placeholder="性别" name="sex">#}
+{#            </div>#}
+{#            <div class="form-group">#}
+{#                <input type="date" class="form-control" placeholder="出生日期" name="birthday">#}
+{#            </div>#}
+            <div class="form-group">
+                <input type="email" class="form-control" placeholder="电子邮箱" name="email">
+            </div>
+{#            <div class="form-group">#}
+{#                <input type="text" class="form-control" placeholder="亲属手机号" name="family_telephone1">#}
+{#            </div>#}
+{#            <div class="form-group">#}
+{#                <input type="text" class="form-control" placeholder="关系" name="relationship1">#}
+{#            </div>#}
+{#            <div class="form-group">#}
+{#                <input type="text" class="form-control" placeholder="亲属手机号" name="family_telephone2">#}
+{#            </div>#}
+{#            <div class="form-group">#}
+{#                <input type="text" class="form-control" placeholder="关系" name="relationship2">#}
+{#            </div>#}
+
+            <div class="form-group">
+                <button class="btn btn-primary btn-block">提交</button>
+            </div>
+        </div>
+    </form>
+{% endblock %}

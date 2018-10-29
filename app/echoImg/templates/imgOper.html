@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    登录
+{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('echoImg.static', filename='css/question.css') }}">
+{% endblock %}
+
+{% block main %}
+    <!--<h3 class="page-title">恭喜：进入登录后才能访问的模块</h3>-->
+     <div class="row">
+                <div class="col-sm-6 b-r">
+
+                    <label class="col-sm-3 control-label ">jpg上传</label>
+                     <div class="col-sm-9">
+                         <form action="/echoImg/upload" method=post enctype=multipart/form-data>
+                             <input type=file name=file>
+                             <input type="hidden" name="type" value="jpg">
+                             <input type=submit value=上传jpg  >
+                          </form>
+                    </div>
+                </div>
+                <div class="col-sm-6 ">
+
+                    <label class="col-sm-3 control-label ">批量压缩包上传</label>
+                     <div class="col-sm-9">
+                         <form action="/echoImg/batchUploadAndUnzip" method=post enctype=multipart/form-data>
+                             <input type=file name=file>
+                             <input type="hidden" name="type" value="zip">
+                             <input type=submit value="上传批量压缩包">
+                         </form>
+                    </div>
+                     <!--<br>-->
+                       <!--<dt>批量压缩包上传</dt>-->
+                       <!--<dd>将xml和jpg打包成zip文件,文件内目录如下:-->
+                            <!--<dl>-->
+                               <!--<dt>xxx.zip</dt>-->
+                               <!--<dd>xml/</dd>-->
+                               <!--<dd>jpg/</dd>-->
+                            <!--</dl>-->
+                       <!--</dd>-->
+                </div>
+     </div>
+
+
+        <dd>
+            <form action="/echoImg/deleteAll" method=post enctype=multipart/form-data>
+                    <input type=submit value="全部删除" class="btn pink">
+            </form>
+        </dd>
+
+
+          <dd>
+            <form action="/echoImg/batchDrawBoxes" method=post enctype=multipart/form-data>
+                    <input type=submit value="批量结果生成" class="btn green">
+            </form>
+        </dd>
+
+
+          <dd>
+            <form action="/echoImg/picList" method=post enctype=multipart/form-data>
+                    <input type=submit value="批量查看结果" class="btn orange">
+            </form>
+        </dd>
+
+        <br>
+    </dl>
+    <br>
+    <div style="width:100%; height:100%; overflow:scroll;">
+    <table border="1"   width="100%" height="100%" >
+    <tr>
+      <th>jpg</th>
+      <th>xml</th>
+      <th>操作</th>
+      <th>result</th>
+    </tr>
+
+     {% for img in imgs %}
+        <tr>
+            <td>
+                  {% if img.imgName %}
+                  <p style="color:green" align="center" >{{ img.imgName}}</p>
+                  <img src="../static/uploads/{{telephone}}/jpg/{{img.imgName}}"  width="480px" height="270px" />
+                  {% endif %}
+            </td>
+            <td>
+
+
+                {% if img.xmlName %}
+                  <p  align="center" ><a href="../static/uploads/{{telephone}}/xml/{{img.xmlName}}"  >{{ img.xmlName}}</a></p>
+
+                {% else %}
+                  <p style="color:red" align="center" >xml文件不存在,请上传{{ img.imgName}} 对应的xml
+                     <form action="/echoImg/upload" method=post enctype=multipart/form-data >
+                         <input type=file name=file>
+                         <input type="hidden" name="type" value="xml">
+                         <input type=submit value=上传xml>
+                      </form>
+                  </p>
+                {% endif %}
+
+            </td>
+            <td>
+                <div align="center">
+                {% if img.imgName  %}
+                    {% if img.xmlName %}
+                        {% if img.resultName %}
+                        {% else %}
+                         <form action="/echoImg/boxDrawing" method=post enctype=multipart/form-data>
+                          <input type="hidden" name="imgName" value="{{ img.imgName}}">
+                          <input type=submit value="结果生成" class="btn green">
+                         </form>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+
+                    <form action="/echoImg/delete" method=post enctype=multipart/form-data>
+                        <input type="hidden" name="imgName" value="{{ img.imgName}}">
+                        <input type=submit value="删除" class="btn blue" >
+                    </form>
+
+                </div>
+            </td>
+           <td>
+               {% if img.resultName %}
+                    <img src="../static/uploads/{{telephone}}/result/{{img.resultName}}"   width="480px" height="270px"/>
+               {% else %}
+
+               {% endif %}
+           </td>
+        </tr>
+      {% endfor %}
+
+    <!--<tr>-->
+      <!--<td><img src="../static/upload/jpg/3.jpg"  width="115px" height="100px"></td>-->
+      <!--<td>Some text</td>-->
+    <!--</tr>-->
+
+    </table>
+    </div>
+    <br>
+
+
+
+
+{% endblock %}

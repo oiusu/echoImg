@@ -18,4 +18,4 @@ app.register_blueprint(echoImg, url_prefix='/echoImg')
 
 
 if __name__ == '__main__':
-    app.run( debug=True,host='0.0.0.0', port=5031,)
+    app.run(host='0.0.0.0', port=5031,)

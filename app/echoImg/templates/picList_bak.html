@@ -1,0 +1,83 @@
+
+<html>
+<head>
+
+<title>图片列表</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8">
+<script type="text/javascript" src="static/js/jquery-3.3.1.js"></script>
+<script type="text/javascript" src="static/js/my.js"></script>
+</head>
+<style type="text/css">
+	*{padding: 0px;margin: 0px;list-style-type:none;}
+	body{padding: 0px;margin: 0px;}
+	.base{position: relative;width:1000px;border: 1px solid #e6e6e6;left:50%;height: 625px;margin-left: -500px;}
+	.base_left{position: absolute;width:70px;height:595px;text-align: center;cursor: pointer;}
+	.jiantou_left{position: absolute;padding:0px;top: 50%;margin-top: -40px;left:9px;width:50px;height:80px;display: block;
+							background: url("static/slider/slider.png") no-repeat 0 0;
+							background-position: 4px -82px;}
+	.base_right{position: absolute;width:68px;height:595px;text-align: center;right:0px;cursor: pointer;}
+	.jiantou_right{position: absolute;left:0px;top: 50%;margin-top: -40px;left:9px;width:50px;height:80px;display: block;
+						background: url("static/slider/slider.png") no-repeat 0 0;
+							background-position: 5px 5px;}
+	.content{  height: 595px; width: 860px;position: absolute;border:1px solid #e6e6e6;left:70px;
+			 no-repeat;background-position: 50%;background-size: contain;}
+	.toggle{position: absolute;top: 596px;width: 100%;height: 30px;background: #fafafa;line-height: 30px;border-top: 1px solid #e6e6e6;}
+	.toggle .list{font-size: 14px;color: #666;width: 98px;cursor: pointer;background: white;}
+	.toggle .list span{display: block;position: absolute;
+			left: 66px;top: 3px;width: 19px;height: 19px;
+			background: url("static/slider/list.png") no-repeat 0 0;
+							background-position: -16px -58px;}
+	.bottle{position: absolute;width:100%;top:625px;border:1px solid #e6e6e6;overflow: hidden;height:0px;}
+	.bottle ul{margin: 0px;position: absolute;height:100px;padding:0px;display:flex;width:10000px;}
+	#list_shot{height:100px;width:880px;position: absolute;left: 59px;overflow: hidden;}
+	.bottle .l{display: block;position: absolute;
+			left: 13px;top: 41px;width: 19px;height: 19px;
+			background: url("static/slider/slider.png") no-repeat 0 0;
+							background-position: -22px -205px;cursor: pointer;}
+	.bottle .r{display: block;position: absolute;
+			left: 969px;top: 41px;width: 19px;height: 19px;
+			background: url("static/slider/slider.png") no-repeat 0 0;
+							background-position: 6px -205px;cursor: pointer;}
+	.bottle ul li{text-decoration: none;float: left;height:100px;margin: 0px 5px;
+					position: relative;left:0px;transition: left 0.5s;border:1px solid #e6e6e6;cursor: pointer;}
+	.bottle ul li:hover {border:1px solid red;}
+</style>
+<body>
+
+<div class="base">
+
+	<div class="base_two">
+		<div class="base_left"><span class="jiantou_left"></span></div>
+		<div class="content"></div>
+		<div class="base_right"><span class="jiantou_right"></span></div>
+	</div>
+	
+	<div class="toggle"><div class="list">|图片列表<span></span>&nbsp;&nbsp;</div></div>
+	
+	<div class="bottle">
+		<span class="l"></span>
+		<div id="list_shot">
+		<ul>
+			  {% for img in imgs %}
+				 {% if img.resultName %}
+				<!--<li><img src="../static/photos_file/0.jpg"  width="115px" height="100px"></li>-->
+					<li><img src="static/uploads/{{telephone}}/result/{{ img.resultName}}"   width="115px" height="100px" /></li>
+				{% endif %}
+			  {% endfor %}
+		</ul>
+		</div>
+		<span class="r"></span>
+	</div>
+
+
+
+</div>
+<div style="text-align:center;">
+		<li>
+			<font style="color:green">{{ username }}</font>
+			<a href="{{url_for('echoImg.homePage')}}">返回</a>
+			<a href="{{url_for('echoImg.logout')}}">退出登录</a>
+		</li>
+</div>
+</body>
+</html>

@@ -1,12 +1,29 @@
-{% extends "loginBase.html" %}
-{% block content %}
+{% extends 'base.html' %}
 
-    <form id="loginForm" action="/echoImg/login" method="post">
-      <legend>Please sign in:</legend>
-      <p><input name="telephone" placeholder="Telephone" value="{{ telephone }}"></p>
-      <p><input name="password" placeholder="Password" type="password"></p>
-      <p><button type="submit">登录</button> <button  type="button" onclick="toRegister()">注册</button></p>
+{% block title %}
+    登录
+{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('echoImg.static', filename='css/login_regist.css') }}">
+{% endblock %}
+
+{% block main %}
+    <h3 class="page-title">登录</h3>
+    <form action="" method="POST">
+        <div class="form-container">
+            {% if message %}
+                <p style="text-align:center;color:red" >{{ message }}</p>
+            {% endif %}
+            <div class="form-group">
+                <input type="text" class="form-control" placeholder="手机号码" name="telephone" value="{{ telephone }}">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" placeholder="密码" name="password">
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary btn-block">立即登录</button>
+            </div>
+        </div>
     </form>
-
-
 {% endblock %}
