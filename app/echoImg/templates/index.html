@@ -118,14 +118,14 @@ textarea { margin: 1em 0;}
             <td>
                   {% if img.imgName %}
                   <p style="color:green" align="center" >{{ img.imgName}}</p>
-                  <img src="static/uploads/{{username}}/jpg/{{img.imgName}}"  width="853px" height="480px" />
+                  <img src="static/uploads/{{telephone}}/jpg/{{img.imgName}}"  width="853px" height="480px" />
                   {% endif %}
             </td>
             <td>
 
 
                 {% if img.xmlName %}
-                  <p  align="center" ><a href="static/uploads/{{username}}/xml/{{img.xmlName}}"  >{{ img.xmlName}}</a></p>
+                  <p  align="center" ><a href="static/uploads/{{telephone}}/xml/{{img.xmlName}}"  >{{ img.xmlName}}</a></p>
 
                 {% else %}
                   <p style="color:red" align="center" >xml文件不存在,请上传{{ img.imgName}} 对应的xml
@@ -161,7 +161,7 @@ textarea { margin: 1em 0;}
             </td>
            <td>
                {% if img.resultName %}
-                    <img src="static/uploads/{{username}}/result/{{img.resultName}}"   width="853px" height="480px"/>
+                    <img src="static/uploads/{{telephone}}/result/{{img.resultName}}"   width="853px" height="480px"/>
                {% else %}
 
                {% endif %}

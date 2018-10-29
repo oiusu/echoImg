@@ -5,15 +5,18 @@
 @time: 2018/10/18 2:08 PM
 @desc:
 '''
+import hashlib
 import os
 import shutil
-
+import re
 from flask import render_template, session
 from flask import request
 from werkzeug.utils import secure_filename, redirect
 
 from app.echoImg import echoImg
 from app.echoImg.boxDrawing import imgDrawBoxes
+from app.echoImg.exts import db
+from app.echoImg.models import User
 
 UPLOAD_FOLDER = os.getcwd()+'/echoImg/static/uploads'   # 本地
 # UPLOAD_FOLDER = os.getcwd()+'/app/echoImg/static/uploads'  # 服务器
@@ -39,10 +42,10 @@ def makeUserDir():
         os.mkdir(getUserResultPath())
     if not os.path.exists(getUserZipPath()):
         os.mkdir(getUserZipPath())
-    print("make user %s dir" %(session.get("username")))
+    print("make user %s dir" %(session.get("telephone")))
 
 def getUsrRootDir():
-    return os.path.join(UPLOAD_FOLDER, session.get("username"))
+    return os.path.join(UPLOAD_FOLDER, str(session.get("telephone")))
 
 def getUserXmlPath():
     return os.path.join(getUsrRootDir(), "xml")
@@ -69,8 +72,8 @@ def auth(func):
 # 返回列表页面
 @echoImg.route('/picList', methods=['GET', 'POST'])
 def picList():
-    imgs ,username = getPageParams()
-    return render_template('picList.html',imgs=imgs,username=username)
+    imgs ,username ,telephone = getPageParams()
+    return render_template('picList.html',imgs=imgs,username=username,telephone=telephone)
 
 
 
@@ -80,7 +83,7 @@ def picList():
 def batchDrawBoxes():
 
     if request.method == 'POST':
-        imgs ,username = getPageParams()
+        imgs ,username ,telephone = getPageParams()
         for imgInfo in imgs:
 
             resultName = imgInfo['resultName']
@@ -257,13 +260,14 @@ def getPageParams():
                 imgInfo['resultName'] = imgName + '.jpg'
 
             imgs.append(imgInfo)
-    return imgs ,session.get("username")
+    return imgs ,str(session.get("username")) ,str(session.get("telephone"))
 
 
 @echoImg.route('/logout', methods=['GET'])
 def logout():
     print("get logout")
-    session.pop('username', None)
+    # session.pop('username', None)
+    session.clear()
     # session 里删除
     return render_template('login.html')
 
@@ -274,29 +278,88 @@ def login():
     if request.method == "GET":
         return render_template('login.html')
     else:
-        username = request.form['username']
-        password = request.form['password']
-        if (username == 'admin' and password == '123') or (username == 'chenc' and password == '456'):
-            session['username'] = username
+
+        telephone = request.form.get('telephone')
+        password = request.form.get('password')
+        m1 = hashlib.md5()
+        m1.update(password.encode("utf8"))
+        pwd_md5 = m1.hexdigest()
+        user = User.query.filter(User.telephone == telephone, User.password == pwd_md5).first()
+        if user:
+            session['telephone'] = user.telephone
+            session['username'] = user.username
             # 建立用户目录
             makeUserDir()
+            # 31天内都不需要登录
+            # session.permanent = True
+            # return redirect(url_for('index'))
             return redirect("/echoImg")
-        return render_template('login.html', message='账号或密码错误', username=username)
+        else:
+            # return u'手机号码或密码错误，请确认后再登录'
+            return render_template('login.html', message='手机号码或密码错误，请确认后再登录', username=user.username)
+
+
+
+
+
+
 
 @echoImg.route('/register',methods=['POST','GET'])
 def register():
     if request.method == "GET":
         return render_template('register.html')
     else:
-        username = request.form['username']
-        password = request.form['password']
-        if username or password:
-            return render_template('register.html')
-        print("注册账号 username=%s" %username)
-        # 保存账号密码 建立用户目录
-        session['username'] = username
-        makeUserDir()
-        return redirect("/echoImg")
+        telephone = request.form.get('telephone')
+        username = request.form.get('username')
+        password1 = request.form.get('password1')
+        password2 = request.form.get('password2')
+
+        # 手机号正则验证
+        phone_pat = re.compile('^(13\d|14[5|7]|15\d|166|17[3|6|7]|18\d)\d{8}$')
+
+        res = re.search(phone_pat, telephone)
+
+        # 手机号码验证，如果被注册就不能再注册
+        user = User.query.filter(User.telephone == telephone).first()
+
+        if user:
+            # return u'该手机号码已被注册'
+            return render_template('register.html', message='该手机号码已被注册', username=username)
+        else:
+            # password1和password2是否相等
+            if password2 != password1:
+                return render_template('register.html', message='两次密码不相同', username=username)
+            elif username == '':
+                return render_template('register.html', message='用户名不能为空', username=username)
+            else:
+                if not res:
+                    return render_template('register.html', message='手机号格式不对', username=username)
+                else:
+                    # 用户名验证，如果被注册就不能再注册
+                    user1 = User.query.filter(User.username == username).first()
+                    if user1:
+                        return render_template('register.html', message='该用户名已被注册',telephone=telephone)
+
+                    # 密码加密存储
+                    m1 = hashlib.md5()
+                    m1.update(password1.encode("utf8"))
+                    pwd_md5 = m1.hexdigest()
+                    user = User(telephone=telephone, username=username, password=pwd_md5)
+                    db.session.add(user)
+                    db.session.commit()
+                    # 如果注册成功，跳转到登录页面
+                    # return redirect(url_for('login'))
+                    print("注册账号 username=%s" % username)
+                    # 保存账号密码 建立用户目录
+                    return render_template('login.html', message=None, telephone=telephone)
+
+        # if username or password:
+        #     return render_template('register.html')
+        # print("注册账号 username=%s" %username)
+        # # 保存账号密码 建立用户目录
+        # session['username'] = username
+        # makeUserDir()
+        # return redirect("/echoImg")
 
 
 #
@@ -318,9 +381,9 @@ def homePage():
 @echoImg.route('/', methods=['GET'])
 @auth
 def index():
-    makeUserDir()
-    imgs ,username = getPageParams()
-    return render_template('index.html',imgs=imgs , username=username)
+    # makeUserDir()
+    imgs ,username ,telephone = getPageParams()
+    return render_template('index.html',imgs=imgs , username=username,telephone=telephone)
     # return render_template('index.html')
 
 
