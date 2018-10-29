@@ -55,10 +55,10 @@ def getUserZipPath():
 
 
 # 返回列表页面
-@echoImg.route('/picList', methods=['GET', 'POST'])
-def picList():
+@echoImg.route('/imgList', methods=['GET', 'POST'])
+def imgList():
     imgs ,username ,telephone = getPageParams()
-    return render_template('picList.html',imgs=imgs,username=username,telephone=telephone)
+    return render_template('imgList.html',imgs=imgs,username=username,telephone=telephone)
 
 
 
@@ -376,8 +376,8 @@ def imgOper():
         # pass
 
 
-@echoImg.route('/homePage', methods=['GET'])
-def homePage():
+@echoImg.route('/returnImgOperPage', methods=['GET'])
+def returnImgOperPage():
     return redirect("/echoImg/imgOper")
 
 

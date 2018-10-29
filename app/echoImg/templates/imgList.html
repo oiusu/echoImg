@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="{{ url_for('echoImg.static', filename='css/picList.css') }}">
+    <link rel="stylesheet" href="{{ url_for('echoImg.static', filename='css/imgList.css') }}">
 	<script type="text/javascript" src="static/js/my.js"></script>
 {% endblock %}
 
@@ -43,7 +43,7 @@
 <div style="text-align:center;">
 		<li>
 			<!--<font style="color:green">{{ username }}</font>-->
-			<a href="{{url_for('echoImg.homePage')}}">返回</a>
+			<a href="{{url_for('echoImg.returnImgOperPage')}}">返回</a>
 			<!--<a href="{{url_for('echoImg.logout')}}">退出登录</a>-->
 		</li>
 </div>
