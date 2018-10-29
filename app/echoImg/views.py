@@ -15,6 +15,7 @@ from werkzeug.utils import secure_filename, redirect
 
 from app.echoImg import echoImg
 from app.echoImg.boxDrawing import imgDrawBoxes
+from app.echoImg.decorators import login_required
 from app.echoImg.exts import db
 from app.echoImg.models import User
 
@@ -24,12 +25,6 @@ UPLOAD_FOLDER = os.getcwd()+'/echoImg/static/uploads'   # 本地
 print ("os.getcwd=%s  " %os.getcwd())
 print ("UPLOAD_FOLDER=%s  " %UPLOAD_FOLDER)
 
-
-#
-# XML_PATH = os.path.join(UPLOAD_FOLDER, "xml")
-# JPG_PATH = os.path.join(UPLOAD_FOLDER, "jpg")
-# RESULT_PATH = os.path.join(UPLOAD_FOLDER, "result")
-# ZIP_PATH = os.path.join(UPLOAD_FOLDER, "zip")
 
 def makeUserDir():
     if not os.path.exists(getUsrRootDir()):
@@ -56,17 +51,7 @@ def getUserResultPath():
 def getUserZipPath():
     return os.path.join(getUsrRootDir(), "zip")
 
-def auth(func):
-    def inner(*args,**kwargs):
-        username = session.get("username")
-        if username:
-            print("[auth] username = %s" %username)
-            return func(*args,**kwargs)
-        else:
-            print("[auth] username = %s" % username)
-            return redirect("/echoImg/login")
 
-    return inner
 
 
 # 返回列表页面
@@ -353,13 +338,7 @@ def register():
                     # 保存账号密码 建立用户目录
                     return render_template('login.html', message=None, telephone=telephone)
 
-        # if username or password:
-        #     return render_template('register.html')
-        # print("注册账号 username=%s" %username)
-        # # 保存账号密码 建立用户目录
-        # session['username'] = username
-        # makeUserDir()
-        # return redirect("/echoImg")
+
 
 
 #
@@ -379,7 +358,7 @@ def homePage():
 
 
 @echoImg.route('/', methods=['GET'])
-@auth
+@login_required
 def index():
     # makeUserDir()
     imgs ,username ,telephone = getPageParams()
