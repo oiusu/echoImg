@@ -19,8 +19,8 @@ from app.echoImg.decorators import login_required
 from app.echoImg.exts import db
 from app.echoImg.models import User
 
-UPLOAD_FOLDER = os.getcwd()+'/echoImg/static/uploads'   # 本地
-# UPLOAD_FOLDER = os.getcwd()+'/app/echoImg/static/uploads'  # 服务器
+# UPLOAD_FOLDER = os.getcwd()+'/echoImg/static/uploads'   # 本地
+UPLOAD_FOLDER = os.getcwd()+'/app/echoImg/static/uploads'  # 服务器
 
 print ("os.getcwd=%s  " %os.getcwd())
 print ("UPLOAD_FOLDER=%s  " %UPLOAD_FOLDER)

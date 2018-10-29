@@ -4,7 +4,7 @@ DEBUG = True
 SECRET_KEY = os.urandom(24)
 
 # 数据库配置
-HOSTNAME = '211.159.164.43'
+HOSTNAME = ''
 PORT = '3306'
 DATABASE = 'echo-img'
 USERNAME = 'root'
