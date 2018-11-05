@@ -6,11 +6,15 @@
 @time: 2018/10/26 9:57 AM
 @desc:
 '''
+import os
 import random
 import shutil
 import time
 from optparse import OptionParser, OptionGroup
-from gevent import os
+
+
+
+currentDate = time.strftime('%Y%m%d', time.localtime(time.time()))
 
 def dictCount(dict,key):
     if key in dict:
@@ -25,6 +29,11 @@ def parseArgs():
     parser.add_option("-n", "--extractNum",
                       action="store", dest="extractNum",
                       help='''抽取数量''')
+
+    parser.add_option("-b", "--batchNum",
+                      action="store", dest="batchNum",
+                      help='''抽取数据的批次''')
+
     group = OptionGroup(parser, 'Warning',
                         "Default and Necessary option:   '-m'   "
                         "                         ./extractImg -n 10000   ")
@@ -33,56 +42,110 @@ def parseArgs():
     (options, args) = parser.parse_args()
     if options.extractNum:
         Args["extractNum"] = int(options.extractNum)
+    if options.batchNum:
+        Args["batchNum"] = int(options.batchNum)
     return Args
 
+
+def moveAndRecord(randNum,keys,finalImgDir,extractImgDir,batchNum,renameMapDict):
+    with open("extractMap", 'a') as nmf1:
+
+        for i in randNum:
+            stepName = keys[i]
+            src_path = os.path.join(finalImgDir, stepName)
+
+            try:
+                split = stepName.split(".")
+                oldName = split[0]  # 1_detection_1460 项目编号_类型_编号
+                houzui = split[1]  # jpeg
+
+                name_split = oldName.split("_")
+
+                projectNumber = name_split[0]
+                type = name_split[1]
+                offset = name_split[2]
+
+                dest_name = currentDate + "_" + projectNumber + "_" + type + "_" + str(batchNum) + "_" + offset + "." + houzui
+
+                dest_path = os.path.join(extractImgDir, dest_name)
+                # tmp_path 移动到 extractImgDir
+                shutil.move(src_path, dest_path)
+
+                nmf1.write(dest_name + "\t" + renameMapDict[stepName] + "\n")
+                # recordExtractMap(keys[i],dest_name)
+                print("from %s  move to %s" % (src_path, dest_path))
+
+            except Exception as e:
+                print("error,i=%s , e=%s" % (i, e))
+
+# def recordExtractMap(stepName,batchNum):
+#     with open("extractMap", 'a') as nmf1:  # 'a'表示append,即在原来文件内容后继续写数据（不清楚原有数据）
+#         #stepName  1_detection_77.jpeg
+#         nmf1.write(dest_name + "\t" + renameMapDict[i] + "\n")
+
+
+
 if __name__ == '__main__':
+
+    projectNumber = "1"  # 项目编号
+    type = "detection"  # detection 检测 ； classification 分类 ； segmentation 分割
 
     args = parseArgs()
 
     extractNum = args["extractNum"]
     print("extractNum=%s" % extractNum)
-    currentDate = time.strftime('%Y%m%d_%H%M', time.localtime(time.time()))
+    batchNum = args["batchNum"]
+    print("batchNum=%s" % batchNum)
+
     print("currentDate = %s " % currentDate)
 
-    extractDirName = "extractImg_"+currentDate+"_"+str(extractNum)
+    extractDirName = currentDate + "_" + projectNumber + "_" + type + "_" + str(batchNum) +"_"+str(extractNum)
+    # extractDirName = "extractImg_"+currentDate+"_"+str(extractNum)
 
     cwd = os.getcwd()
     print("cwd = %s " % cwd)
 
-    nameMapFile = os.path.join(cwd, "nameMap")
-    print("nameMapFile = %s " % nameMapFile)
+    renameMapFile = os.path.join(cwd, "renameMap")
+    print("renameMapFile = %s " % renameMapFile)
 
     finalImgDir = os.path.join(cwd, "imgs_final_result")
     print("finalImgDir = %s " % finalImgDir)
 
-    extractImgDir = os.path.join(cwd, extractDirName)
+    extractResultDir = os.path.join(cwd, "extract_result")
+    print("extractResultDir = %s " % extractResultDir)
+
+    extractImgDir = os.path.join(extractResultDir, extractDirName)
     print("extractImgDir = %s " % extractImgDir)
+
+    if not os.path.exists(extractResultDir):
+        os.mkdir(extractResultDir)
 
     if not os.path.exists(extractImgDir):
         os.mkdir(extractImgDir)
 
-    nameMapDict = {}
-    # 读取 nameMapFile , 获取图片类别
-    with open("nameMap", 'r') as f:
-        nameMapLines = f.readlines()
-        for i in range(0, len(nameMapLines)):
-            kv = nameMapLines[i].rstrip('\n').split("\t")
-            nameMapDict[kv[1]] = kv[0]
+    renameMapDict = {}
+    renameMapReverseDict = {} # 反转的字典 ， 根据val 查询用
+    # 读取 renameMapFile , 获取图片类别
+    with open("renameMap", 'r') as f:
+        renameMapLines = f.readlines()
+        for i in range(0, len(renameMapLines)):
+            kv = renameMapLines[i].rstrip('\n').split("\t")
+            renameMapDict[kv[0]] = kv[1]             # 1_detection_1480.jpeg	                                    sparse_4_normal_daytime_urban_v1539933691465_002.jpeg
+            renameMapReverseDict[kv[1]] = kv[0]      # sparse_4_normal_daytime_urban_v1539933691465_002.jpeg        1_detection_1480.jpeg
 
-    keys = nameMapDict.keys()
-    # dense_4_normal_daytime_urban_v1539936572761_011.jpeg
+    fs = os.listdir(finalImgDir)
+    # 获得剩下的结果图片  imgs_final_result 的 字典
+    finalResultMapDict = {}
+    for i in fs :
+        finalResultMapDict[i] = renameMapDict[i]
 
-    # 天气：正常（normal）  多云（cloudy） 雨天（rainy）
-    # 时段：白天（daytime）    傍晚（dusk）  夜晚（night）
-    # 道路：城市道路（urban）高速道路（expressway）
-    # normal_daytime_urban.mp4
-    densityDict = {} #密度
-    weatherDict = {} #天气
-    timeSlotDict = {} #时间段
-    scenesDict = {} #场景
+    originNames = finalResultMapDict.values()
 
+    # 分成2个字典  dense or sparse
+    denseDict = {}
+    sparseDict = {}
 
-    for i in keys:
+    for i in originNames:
         try:
             splits = i.split("_")
             density = splits[0]
@@ -90,33 +153,56 @@ if __name__ == '__main__':
             timeSlot = splits[3]
             scenes = splits[4]
 
-            dictCount(densityDict,density)
-            dictCount(weatherDict,weather)
-            dictCount(timeSlotDict,timeSlot)
-            dictCount(scenesDict,scenes)
+            if density == 'dense':
+                stepName = renameMapReverseDict[i]
+                denseDict[stepName] = i
+            if density == 'sparse':
+                stepName = renameMapReverseDict[i]
+                sparseDict[stepName] = i
+
         except Exception as e:
-            print("error,i=%s , e=%s" %(i , e))
+            print("error,i=%s , e=%s" % (i, e))
+
+    print("待抽取数=%s ,denseDict size=%s , sparseDict size=%s " % (extractNum, len(denseDict), len(sparseDict)))
+
+    # 抽取数目 一半 denseDict ， 一半 sparseDict
+    denseSize = int(extractNum / 2)
+    sparseSize = extractNum - denseSize
+    sparseRandNum = []
+    denseRandNum = []
+
+    # if denseSize > len(denseDict) and sparseSize > len(sparseDict) :
+    if sparseSize >= len(sparseDict):
+        # sparseDict 全抽取
+        sparseRandNum = range(0,len(sparseDict))
+        denseSize = extractNum - len(sparseDict)
 
 
-    print(densityDict)
-    print(weatherDict)
-    print(timeSlotDict)
-    print(scenesDict)
+    if denseSize >= len(denseDict) :
+        # denseDict 全抽取
+        denseRandNum = range(0, len(denseDict))
+        sparseSize = extractNum - len(denseDict)
+
+    if len(sparseRandNum) == 0 :
+        sparseRandNum = random.sample(range(0, len(sparseDict)),sparseSize if sparseSize < len(sparseDict) else len(sparseDict))
+    if len(denseRandNum) == 0 :
+        denseRandNum = random.sample(range(0, len(denseDict)), denseSize if denseSize < len(denseDict) else len(denseDict))
+
+    print("待抽取数=%s ,denseRandNum size=%s , sparseRandNum size=%s " % (extractNum, len(denseRandNum), len(sparseRandNum)))
+
+    # randNum = random.sample(range(0, len(fs)), extractNum if extractNum < len(fs) else len(fs) )  # random.sample()生成不相同的随机数
+    # print(randNum)
+    #
+    sparseKeys = list(sparseDict.keys())
+    denseKeys = list(denseDict.keys())
+
+    moveAndRecord(sparseRandNum,sparseKeys,finalImgDir,extractImgDir,batchNum,renameMapDict)
+    moveAndRecord(denseRandNum,denseKeys,finalImgDir,extractImgDir,batchNum,renameMapDict)
 
 
-    # 读取finalImgDir 下文件数量 随机抽取 extractNum
 
-    fs = os.listdir(finalImgDir)
 
-    randNum = random.sample(range(0, len(fs)), extractNum if extractNum < len(fs) else len(fs) )  # random.sample()生成不相同的随机数
-    print(randNum)
 
-    for i in randNum:
-        src_path = os.path.join(finalImgDir, fs[i])
-        dest_path = os.path.join(extractImgDir, fs[i])
-        # tmp_path 移动到 extractImgDir
-        shutil.move(src_path, dest_path)
-        print("from %s  move to %s" %(src_path,dest_path))
 
     print("finish...")
 

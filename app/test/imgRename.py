@@ -16,10 +16,10 @@ def appendToExclude(i):
 
 
 # offset 记录 图片消费的index , exclude 记录已经处理的文件夹 ,
-# 程序是把图片拷贝到 当前目录下imgs_final_result 文件夹， 并且 按 年份_批次__类型_编号 重命名 ，记录 新文件名 和 原文件名的 映射文件
+# 程序是把图片拷贝到 当前目录下imgs_final_result 文件夹， 并且 按 项目编号_类型_编号 重命名 ，记录 新文件名 和 原文件名的 映射文件
 if __name__ == '__main__':
-    year = "2018"
-    batchNumber = "1"
+    # year = "2018"
+    projectNumber = "1"  # 项目编号
     type = "detection"  # detection 检测 ； classification 分类 ； segmentation 分割
 
     cwd= os.getcwd()
@@ -34,8 +34,8 @@ if __name__ == '__main__':
     excludeFile = os.path.join(cwd, "exclude")
     print("excludeFile = %s " % excludeFile)
 
-    nameMapFile = os.path.join(cwd, "nameMap")
-    print("nameMapFile = %s " % nameMapFile)
+    renameMapFile = os.path.join(cwd, "renameMap")
+    print("renameMapFile = %s " % renameMapFile)
 
     finalImgDir = os.path.join(cwd, "imgs_final_result")
     print("finalImgDir = %s " % finalImgDir)
@@ -50,8 +50,8 @@ if __name__ == '__main__':
         file = open("exclude", 'w')
         file.close()
 
-    if not os.path.exists(nameMapFile):
-        file = open("nameMap", 'w')
+    if not os.path.exists(renameMapFile):
+        file = open("renameMap", 'w')
         file.close()
 
     # 读取exclude 已处理文件夹列表
@@ -69,13 +69,12 @@ if __name__ == '__main__':
         offset = 0 if val == '' else int(val)
         print("begin offset = %s" % offset)
 
-    # with open("nameMap", 'a') as nmf1:
-    #     nmf1.write(i + "\n")
+
 
 
 
     # 遍历dir下子文件夹目录
-    with open("nameMap", 'a') as nmf1:  # 'a'表示append,即在原来文件内容后继续写数据（不清楚原有数据）
+    with open("renameMap", 'a') as nmf1:  # 'a'表示append,即在原来文件内容后继续写数据（不清楚原有数据）
         fs = os.listdir(originImgDir)
         for i in fs:
             tmp_path = os.path.join(originImgDir, i)
@@ -92,7 +91,8 @@ if __name__ == '__main__':
                                 # 移动文件  年份_批次__类型_编号  （Decetion,Segmentation, classification）  目前就是检测
                                 src_img_path = os.path.join(tmp_child_path, k)
                                 offset += 1
-                                dest_name = year + "_" + batchNumber + "_" + type + "_" + str(offset) + ".jpeg"
+                                dest_name =  projectNumber + "_" + type + "_" + str(offset) + ".jpeg"
+                                # dest_name = year + "_" + projectNumber + "_" + type + "_" + str(offset) + ".jpeg"
                                 dest_img_path = os.path.join(finalImgDir,dest_name )
                                 shutil.copyfile(src_img_path, dest_img_path)
                                 nmf1.write(dest_name+"\t"+k+"\n")
