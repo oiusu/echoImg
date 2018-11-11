@@ -65,7 +65,7 @@ def parse_rec(filename):
 
     return objects
 
-def img_bboxdraw(upload_dir,img_name,bboxes,score,classes):
+def img_bboxdraw(upload_dir,imgFullName,bboxes,score,classes):
 
     black = (0,0,0)
     green = (0,255,0)
@@ -81,7 +81,7 @@ def img_bboxdraw(upload_dir,img_name,bboxes,score,classes):
     color_map = {'bike': green, '1':red}#, 'bus':pin, 'bicycle':yellow, 'motocycle':blue, 'traffic light': qin,
                 # 'traffic sign':grey, 'truck':purple, 'cell phone': black, 'bottle': white}
 
-    img = os.path.join(upload_dir,'jpg',img_name+'.jpg')
+    img = os.path.join(upload_dir,'jpg',imgFullName)
     #print(img)
     image = cv2.imread(img)
     h,w,_ = image.shape
@@ -105,11 +105,13 @@ def img_bboxdraw(upload_dir,img_name,bboxes,score,classes):
 
 
     # PATH = os.path.join(FLAGS.save_path,imgs +'.jpg')
-    PATH = os.path.join(upload_dir,'result',img_name +'.jpg')
+    PATH = os.path.join(upload_dir,'result',imgFullName)
     cv2.imwrite(PATH,image)
 
 
-def imgDrawBoxes(upload_dir,img_name):
+def imgDrawBoxes(upload_dir,imgFullName):
+    img_name = imgFullName.split('.')[0]
+
     boxes = []
     classes = []
     score = []
@@ -131,7 +133,7 @@ def imgDrawBoxes(upload_dir,img_name):
         print('not boxes skip ------------>', img_name)
         return
         # continue
-    img_bboxdraw(upload_dir,img_name, boxes, score, classes)
+    img_bboxdraw(upload_dir,imgFullName, boxes, score, classes)
 
 # def main(anno_dir,img_dir,img_names):
 #     """

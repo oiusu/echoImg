@@ -19,7 +19,7 @@ from app.echoImg.decorators import login_required
 from app.echoImg.exts import db
 from app.echoImg.models import User
 
-# UPLOAD_FOLDER = os.getcwd()+'/echoImg/static/uploads'   # 本地
+# UPLOAD_FOLDER = os.getcwd()+'/echoImg/static/uploads'   # TODO 本地
 UPLOAD_FOLDER = os.getcwd()+'/app/echoImg/static/uploads'  # 服务器
 
 print ("os.getcwd=%s  " %os.getcwd())
@@ -72,13 +72,13 @@ def batchDrawBoxes():
         for imgInfo in imgs:
 
             resultName = imgInfo['resultName']
-            imgName = imgInfo['imgName']
+            imgFullName = imgInfo['imgName']
             xmlName = imgInfo['xmlName']
-            if  not resultName.strip()  and  imgName.strip() and  xmlName.strip() :
+            if  not resultName.strip()  and  imgFullName.strip() and  xmlName.strip() :
                 # 当resultName为空且 imgName和xmlName 都存在的情况下，需要执行生成resultImg
-                img_name = imgName.split('.')[0]
-                print('drawBoxes：%s' % imgName)
-                imgDrawBoxes(getUsrRootDir(),img_name)
+                # img_name = imgName.split('.')[0]
+                print('drawBoxes：%s' % imgFullName)
+                imgDrawBoxes(getUsrRootDir(),imgFullName)
 
         return redirect("/echoImg/imgOper")
 
@@ -122,7 +122,7 @@ def recursionDir(path):
         tmp_path = os.path.join(path, i)
         if not os.path.isdir(tmp_path):
 
-            if os.path.splitext(i)[1] == '.jpg':
+            if os.path.splitext(i)[1] == '.jpg' or os.path.splitext(i)[1] == '.jpeg':
                 print("jpg : "+ i)
                 if not os.path.exists(os.path.join(getUserJpgPath(),i)):
                     shutil.move(tmp_path, getUserJpgPath())  # 移动文件
@@ -161,8 +161,8 @@ def delete():
 
         # 删除 jpg xml result
         xml_file_path = os.path.join(getUserXmlPath(), imgNamePrefix + '.xml')
-        jpg_file_path = os.path.join(getUserJpgPath(), imgNamePrefix + '.jpg')
-        result_file_path = os.path.join(getUserResultPath(), imgNamePrefix + '.jpg')
+        jpg_file_path = os.path.join(getUserJpgPath(), imgName)
+        result_file_path = os.path.join(getUserResultPath(), imgName)
         if os.path.exists(xml_file_path):
             os.remove(xml_file_path)
         if os.path.exists(jpg_file_path):
@@ -176,9 +176,9 @@ def delete():
 @echoImg.route('/boxDrawing', methods=[ 'POST'])
 def boxDrawing():
     if request.method == 'POST':
-        imgName = request.form['imgName']
-        img_name = imgName.split('.')[0]
-        imgDrawBoxes(getUsrRootDir(),img_name)
+        imgFullName = request.form['imgName']
+        # img_name = imgFullName.split('.')[0]
+        imgDrawBoxes(getUsrRootDir(),imgFullName)
 
         return redirect("/echoImg/imgOper")
 
@@ -227,7 +227,8 @@ def getPageParams():
 
     if  list :
         for i in range(0, len(list)):
-            imgName = list[i].split('.')[0]
+            imgFullName = list[i]
+            imgName = imgFullName.split('.')[0]
 
             imgInfo = {
                 'imgName': '',
@@ -235,14 +236,14 @@ def getPageParams():
                 'resultName': ''
             }
 
-            imgInfo['imgName'] = imgName + '.jpg'
+            imgInfo['imgName'] = imgFullName
             # 查看文件是否存在
             xml_file_path = os.path.join(getUserXmlPath(), imgName + '.xml')
             if os.path.exists(xml_file_path):
                 imgInfo['xmlName'] = imgName + '.xml'
-            result_file_path = os.path.join(getUserResultPath(), imgName + '.jpg')
+            result_file_path = os.path.join(getUserResultPath(), imgFullName)
             if os.path.exists(result_file_path):
-                imgInfo['resultName'] = imgName + '.jpg'
+                imgInfo['resultName'] = imgFullName
 
             imgs.append(imgInfo)
     return imgs ,str(session.get("username")) ,str(session.get("telephone"))
