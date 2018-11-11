@@ -7,5 +7,5 @@ cd $FWDIR
 
 
 export PYTHONPATH=$PYTHONPATH:`pwd`
-nohup python app/run.py  &
+nohup python app/echoImg_run.py  &
 
